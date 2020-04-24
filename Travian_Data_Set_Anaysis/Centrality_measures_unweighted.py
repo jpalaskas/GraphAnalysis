@@ -16,16 +16,17 @@ def betweenness_centrality(rel_type, graph):
     return r1, r2
 
 
-def closeness(graph):
-    closeness_centrality = graph.run(
-        "CALL algo.closeness.stream('MATCH (p:User) RETURN id(p) as id','MATCH (p1:User)-[r]-(p2:User) RETURN id(p1) as source, id(p2) as target',{graph:'cypher'})YIELD nodeId, centrality").to_data_frame()
-    # graph.run("")
+def closeness(graph, rel_type=''):
+    closeness_centrality = graph.run('''CALL algo.closeness.stream('User','%s', {concurrency:4}) 
+                                        YIELD nodeId, centrality MATCH (user:User) WHERE id(user) = nodeId 
+                                        RETURN user.id AS user,centrality ORDER BY centrality DESC;
+                                         ''' % rel_type, rel_type=rel_type).to_data_frame()
+
     return closeness_centrality
 
 
 def degree_centrality(rel_type, graph):
     """
-
     :param rel_type:
     :param graph:
     :return: dict with active relationships
@@ -76,15 +77,25 @@ def pagerank(rel_type, graph):
 
 
 def plots_for_measures(attacks_centrality, attacks_centrality_prob, trades_centrality, trades_centrality_prob,
-                       messages_centrality, messages_centrality_prob, out_attacks, in_attacks, out_trades, in_trades, out_messages, in_messages, closeness_centrality, pagerank_score, pagerank_for_attacks_damp, pagerank_for_attacks, pagerank_for_trades_damp, pagerank_for_trades, pagerank_for_messages_damp, pagerank_for_messages):
+                        messages_centrality, messages_centrality_prob, graph_betweeness_centrality,
+                        graph_betweeness_centrality_prob, out_attacks, in_attacks, out_trades, in_trades,
+                        out_messages, in_messages, closeness_centrality_attacks, closeness_centrality_trades,
+                        closeness_centrality_messages, closeness_centrality_entire_graph, pagerank_score,
+                        pagerank_for_attacks_damp, pagerank_for_attacks, pagerank_for_trades_damp, pagerank_for_trades,
+                        pagerank_for_messages_damp, pagerank_for_messages):
     dict_helper = {
         'Attacks-Centrality Histogram': attacks_centrality,
         'Attacks-Centrality with probaility Histogram': attacks_centrality_prob,
         'Trades-Centrality Histogram': trades_centrality,
         'Trades-Centrality with probaility Histogram': trades_centrality_prob,
         'Messages-Centrality Histogram': messages_centrality,
+        'Betweeness_centrality for entire Graph': graph_betweeness_centrality,
+        'Betweeness_centrality for entire Graph with propabillity ': graph_betweeness_centrality_prob,
         'Messages-Centrality with probability Histogram': messages_centrality_prob,
-        'Closeness Centrality': closeness_centrality
+        'Closeness Centrality': closeness_centrality_entire_graph,
+        'Closeness Centrality for attacks': closeness_centrality_attacks,
+        'Closeness Centrality for trades': closeness_centrality_trades,
+        'Closeness Centrality for messages': closeness_centrality_messages
     }
     for hist_title, values in dict_helper.items():
         hist_plot = values['centrality'].hist(bins=100)
@@ -137,7 +148,7 @@ def main():
     attacks_centrality, attacks_centrality_prob = betweenness_centrality('ATTACKS', graph)
     messages_centrality, messages_centrality_prob = betweenness_centrality('messages', graph)
     trades_centrality, trades_centrality_prob = betweenness_centrality('TRADES', graph)
-
+    graph_betweeness_centrality,graph_betweeness_centrality_prob = betweenness_centrality('', graph)
     out_attacks, in_attacks = degree_centrality("ATTACKS", graph)
     out_trades, in_trades = degree_centrality("TRADES", graph)
     out_messages, in_messages = degree_centrality("messages", graph)
@@ -147,10 +158,18 @@ def main():
     pagerank_for_trades_damp, pagerank_for_trades = pagerank("TRADES", graph)
     pagerank_for_messages_damp, pagerank_for_messages = pagerank("messages", graph)
 
-    closeness_centrality = closeness(graph)
+    closeness_centrality_attacks = closeness(graph, 'ATTACKS')
+    closeness_centrality_messages = closeness(graph, 'TRADES')
+    closeness_centrality_trades = closeness(graph, 'messages')
+    closeness_centrality_entire_graph = closeness(graph)
 
     plots_for_measures(attacks_centrality, attacks_centrality_prob, trades_centrality, trades_centrality_prob,
-                       messages_centrality, messages_centrality_prob, out_attacks, in_attacks, out_trades, in_trades, out_messages, in_messages, closeness_centrality, pagerank_score, pagerank_for_attacks_damp, pagerank_for_attacks, pagerank_for_trades_damp, pagerank_for_trades, pagerank_for_messages_damp, pagerank_for_messages)
+                        messages_centrality, messages_centrality_prob, graph_betweeness_centrality,
+                        graph_betweeness_centrality_prob, out_attacks, in_attacks, out_trades, in_trades,
+                        out_messages, in_messages, closeness_centrality_attacks, closeness_centrality_trades,
+                        closeness_centrality_messages, closeness_centrality_entire_graph, pagerank_score,
+                        pagerank_for_attacks_damp, pagerank_for_attacks, pagerank_for_trades_damp, pagerank_for_trades,
+                        pagerank_for_messages_damp, pagerank_for_messages)
 
 
 if __name__ == '__main__':

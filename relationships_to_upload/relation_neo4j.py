@@ -1,5 +1,5 @@
 import pandas as pd
-from py2neo import Graph, Node, Relationship
+from py2neo import Graph
 from datetime import datetime
 
 import json
