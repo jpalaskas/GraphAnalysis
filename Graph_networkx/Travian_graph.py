@@ -1,4 +1,5 @@
 import glob
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -20,6 +21,15 @@ def read_csv_files():
 
         df = pd.read_csv(file, header=None)
         df.columns = ['Timestamp', 'id1', 'id2']
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='s')
+        df['date'] = [d.date() for d in df['Timestamp']]
+        df['time'] = [d.time() for d in df['Timestamp']]
+        # time_stamp = int(['Timestamp'])
+        # formatted_time_stamp = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
+        # splitted_time_stamp = formatted_time_stamp.split()
+        # df['date']= splitted_time_stamp[0]
+        # df['time'] = splitted_time_stamp[1]
+
         x = 1
         if 'attack' in file:
             rel_type = 'attacks'
@@ -33,7 +43,7 @@ def read_csv_files():
 
         all_dfs = pd.concat([all_dfs, df])
     G = nx.from_pandas_edgelist(df=all_dfs, source='id1', target='id2', edge_attr=True,
-                                create_using=nx.MultiDiGraph(name='Travian_Graph'))
+                                create_using=nx.DiGraph(name='Travian_Graph'))
 
     # pos = nx.spring_layout(G, k=10)
     # nx.draw(G, pos, with_labels=True)
@@ -108,6 +118,7 @@ def degree_measures_per_type(labels):
         ],
         columns=['UserId', 'Category of edge', 'IN/OUT', 'degree']
     )
+    x=1
     moves.clear()
     attacks_active = moves_df.iloc[::6, ::3]
     trades_active = moves_df.iloc[1::6, ::3]
@@ -119,6 +130,7 @@ def degree_measures_per_type(labels):
     total_attacks = total_moves_in_out.iloc[::3, ::2]
     total_trades = total_moves_in_out.iloc[1::3, ::2]
     total_messages = total_moves_in_out.iloc[2::3, ::2]
+
     moves = {
         'Active attacks per user': attacks_active,
         'Active trades per user': trades_active,
@@ -242,22 +254,65 @@ def measures_for_centrality(G):
         plt.show()
 
 
+def link_prediction(G):
+    # predictions = []
+    predictions1 = nx.resource_allocation_index(G, G.edges())
+    predictions2 = nx.jaccard_coefficient(G, G.edges())
+    predictions3 = nx.adamic_adar_index(G, G.edges())
+    predictions4 = nx.preferential_attachment(G, G.edges())
+    # predictions.extend([predictions1, predictions2, predictions3, predictions4])
+    lst = []
+    try:
+        for u, v, p in predictions1:
+            lst.append((u, v, p))
+            print('(%d, %d) -> %.8f' % (u, v, p))
+    except ZeroDivisionError:
+        print("ZeroDivisionError: float division by zero")
+    x = 1
+
+
+def important_characteristics_of_graph(G):
+    print("Eccentricity: ", nx.eccentricity(G))
+    print("Diameter: ", nx.diameter(G))
+    print("Radius: ", nx.radius(G))
+    print("Preiphery: ", list(nx.periphery(G)))
+    print("Center: ", list(nx.center(G)))
+
+    weakly_component = [G.subgraph(c).copy() for c in sorted(nx.weakly_connected_components(G))]
+
+    largest_wcc = max(weakly_component)
+
+    print(weakly_component)
+
+
 def main():
     G, all_dfs, labels = read_csv_files()
-    user_in_degree, user_out_degree, user_degree, best_active_user, best_passive_user, best_user, \
-    unpopular_active_user, unpopular_passive_user, unpopular_user, avg_in_degree, avg_out_degree, \
-    avg_degree = graph_degrees_measures(G, labels)
-
-    hist_plots(user_in_degree, user_out_degree, user_degree)
-
-    bar_plots(best_active_user, best_passive_user, best_user, unpopular_active_user, unpopular_passive_user,
-              unpopular_user, avg_in_degree, avg_out_degree, avg_degree)
     total_attacks, total_trades, total_messages = degree_measures_per_type(labels)
-    jac_sim(total_attacks, total_trades, total_messages)
-    measures_for_centrality(G)
+    #link_prediction(G)
+    # user_in_degree, user_out_degree, user_degree, best_active_user, best_passive_user, best_user, \
+    # unpopular_active_user, unpopular_passive_user, unpopular_user, avg_in_degree, avg_out_degree, \
+    # avg_degree = graph_degrees_measures(G, labels)
+
+    # hist_plots(user_in_degree, user_out_degree, user_degree)
+    #
+    # bar_plots(best_active_user, best_passive_user, best_user, unpopular_active_user, unpopular_passive_user,
+    #           unpopular_user, avg_in_degree, avg_out_degree, avg_degree)
+
+    # jac_sim(total_attacks, total_trades, total_messages)
+    # measures_for_centrality(G)
+    # ximportant_characteristics_of_graph(G)
+
+    # weakly_component = [len(c) for c in sorted(nx.weakly_connected_components(G),
+    #                                            key=len, reverse=True)]
+    # largest_wc = max(nx.weakly_connected_components(G), key=len)
+    # print(weakly_component)
+    # print(largest_wc)
+    # print(len(largest_wc))
+
+    scc = [len(c) for c in sorted(nx.strongly_connected_components(G), key=len, reverse=True)]
+    print(len(scc))
+    print(max(nx.strongly_connected_components(G), key=len))
 
 
 if __name__ == '__main__':
     main()
-
-

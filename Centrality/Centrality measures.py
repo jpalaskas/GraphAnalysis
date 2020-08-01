@@ -6,9 +6,26 @@ import sys
 import matplotlib.pyplot as plt
 
 
+def read_from_neo4j_database():
+    with open('../neo_config/neoConfig.json') as f:
+        # load data within configuration
+        try:
+            neo_config = json.load(f)
+        except:
+
+            sys.exit('Failure to retrieve data...')
+
+    url = neo_config['neodb']['url']
+    password = neo_config['neodb']['password']
+    graph = Graph(url, password=password)
+
+    return graph
+
+
 def betweenness_centrality(rel_type, graph):
     r1 = graph.run(
-        "CALL algo.betweenness.stream('User','%s',{direction:'out'}) YIELD nodeId, centrality MATCH (user:User) WHERE id(user) = nodeId RETURN user.id AS user,centrality ORDER BY centrality DESC;" % rel_type, rel_type=rel_type).to_data_frame()
+        "CALL algo.betweenness.stream('User','%s',{direction:'out'}) YIELD nodeId, centrality MATCH (user:User) WHERE id(user) = nodeId RETURN user.id AS user,centrality ORDER BY centrality DESC;" % rel_type,
+        rel_type=rel_type).to_data_frame()
     r2 = graph.run(
         "CALL algo.betweenness.sampled.stream('User','%s',{strategy:'random', probability:1.0, maxDepth:1, direction: 'out'}) YIELD nodeId, centrality" % rel_type,
         rel_type=rel_type).to_data_frame()
@@ -33,7 +50,7 @@ def degree_centrality(rel_type, graph):
     # PageRank
     if rel_type == "ATTACKS":
         # Degree Centrality
-        outdegree_attacks = graph.run("MATCH (u:User) RETURN u.id, size ((u)<-[:" + rel_type + "]-()) AS degree ORDER BY degree DESC",
+        outdegree_attacks = graph.run("MATCH (u:User)RETURN u.id, size ((u)<-[:" + rel_type + "]-()) AS degree ORDER BY degree DESC",
                            rel_type=rel_type).to_data_frame()
 
         indegree_attacks = graph.run(
@@ -124,18 +141,15 @@ def plots_for_measures(attacks_centrality, attacks_centrality_prob, trades_centr
         hist_plot.set_title(hist_title)
         hist_plot.set_xlabel('Score Pagerank')
         hist_plot.set_ylabel("users")
-        #ax= plt.gca()
-        #ax.set_xlim([0,10000])
-        #plt.xticks(0,100,200,300,400,500)
         plt.show()
 
 
 def main():
-    graph = Graph('127.0.0.1', password='leomamao97')
+    graph = read_from_neo4j_database()
     print("Read from database")
 
     attacks_centrality, attacks_centrality_prob = betweenness_centrality('ATTACKS', graph)
-    messages_centrality, messages_centrality_prob = betweenness_centrality('messages', graph)
+    messages_centrality, messages_centrality_prob = betweenness_centrality('MESSAGES', graph)
     trades_centrality, trades_centrality_prob = betweenness_centrality('TRADES', graph)
 
     out_attacks, in_attacks = degree_centrality("ATTACKS", graph)
