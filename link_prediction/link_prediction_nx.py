@@ -33,16 +33,9 @@ def read_csv_files():
         df = pd.read_csv(file, header=None)
         df.columns = ['Timestamp', 'id1', 'id2']
         df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='s')
-        df['date']=[d.date() for d in df['Timestamp']]
-        df['time']=[d.time() for d in df['Timestamp']]
-        # time_stamp = int(['Timestamp'])
-        #formatted_time_stamp = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-        # splitted_time_stamp = formatted_time_stamp.split()
-        # df['date']= splitted_time_stamp[0]
-        # df['time'] = splitted_time_stamp[1]
+        df['date'] = [d.date() for d in df['Timestamp']]
+        df['time'] = [d.time() for d in df['Timestamp']]
 
-
-        x = 1
         if 'attack' in file:
             rel_type = 'attacks'
 

@@ -33,7 +33,7 @@ def create_model(graph, starttime):
     MATCH (u)-[:TRADES*2..3]-(other)
     WHERE not((u)-[:TRADES]-(other))
     RETURN id(u) AS node1, id(other) AS node2, 0 AS label
-    """).to_data_frame()
+    """).to_data_frame().info(memory_usage='int16')
 
     train_missing_links = train_missing_links.drop_duplicates()
     training_df = train_missing_links.append(train_existing_links, ignore_index=True)

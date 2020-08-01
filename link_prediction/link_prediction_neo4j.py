@@ -100,36 +100,36 @@ def total_neighbors(rel_type, graph):
 def main():
     graph = Graph('127.0.0.1', password='leomamao971')
     best_users(graph)
-    # print("Read from database")
-    # common_neighbors('TRADES', graph)
-    # common_neighbors('ATTACKS', graph)
-    # common_neighbors('messages', graph)
-    # common_neighbors('', graph)
-    #
-    # adamic_adar_alg('TRADES', graph)
-    # adamic_adar_alg('ATTACKS', graph)
-    # adamic_adar_alg('messages', graph)
-    # adamic_adar_alg('', graph)
-    #
-    # linkprediction_preferectialAttachment('TRADES', graph)
-    # linkprediction_preferectialAttachment('ATTACKS', graph)
-    # linkprediction_preferectialAttachment('messages', graph)
-    # linkprediction_preferectialAttachment('', graph)
-    #
-    # resourceAllocation('TRADES', graph)
-    # resourceAllocation('ATTACKS', graph)
-    # resourceAllocation('messages', graph)
-    # resourceAllocation('', graph)
-    #
-    # linkpred_sameCommunity('TRADES', graph)
-    # linkpred_sameCommunity('ATTACKS', graph)
-    # linkpred_sameCommunity('messages', graph)
-    # linkpred_sameCommunity('', graph)
-    #
-    # total_neighbors('TRADES', graph)
-    # total_neighbors('ATTACKS', graph)
-    # total_neighbors('messages', graph)
-    # total_neighbors('', graph)
+    print("Read from database")
+    common_neighbors('TRADES', graph)
+    common_neighbors('ATTACKS', graph)
+    common_neighbors('messages', graph)
+    common_neighbors('', graph)
+
+    adamic_adar_alg('TRADES', graph)
+    adamic_adar_alg('ATTACKS', graph)
+    adamic_adar_alg('messages', graph)
+    adamic_adar_alg('', graph)
+
+    linkprediction_preferectialAttachment('TRADES', graph)
+    linkprediction_preferectialAttachment('ATTACKS', graph)
+    linkprediction_preferectialAttachment('messages', graph)
+    linkprediction_preferectialAttachment('', graph)
+
+    resourceAllocation('TRADES', graph)
+    resourceAllocation('ATTACKS', graph)
+    resourceAllocation('messages', graph)
+    resourceAllocation('', graph)
+
+    linkpred_sameCommunity('TRADES', graph)
+    linkpred_sameCommunity('ATTACKS', graph)
+    linkpred_sameCommunity('messages', graph)
+    linkpred_sameCommunity('', graph)
+
+    total_neighbors('TRADES', graph)
+    total_neighbors('ATTACKS', graph)
+    total_neighbors('messages', graph)
+    total_neighbors('', graph)
 
 
 if __name__ == '__main__':
