@@ -39,6 +39,7 @@ def split_df(df):
     return attacks, messages, trades
 
 for _file in os.listdir(os.getcwd()):
+    
     if 'worst_in' in _file and \
          'comparison' not in _file:
 
